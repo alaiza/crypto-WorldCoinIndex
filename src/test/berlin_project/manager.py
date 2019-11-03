@@ -1,14 +1,17 @@
 import logging
 import pandas as pd
+import subprocess
+import csv
 
 
 _logger = logging.getLogger(__name__)
 
-def getCleanDataframe(listcoins,dictdata):
+def getCleanDataframe(listcoins,dictdata,daystored):
     data=[]
     for key in dictdata:
         if(key in listcoins):
             auxrow = []
+            auxrow.append(daystored)
             auxrow.append(key)
             auxrow.append(str(dictdata[key].get('Price_cny')))
             auxrow.append(str(dictdata[key].get('Name')))
@@ -21,5 +24,28 @@ def getCleanDataframe(listcoins,dictdata):
             auxrow.append(str(dictdata[key].get('Volume_24h')))
             auxrow.append(str(dictdata[key].get('Price_eur')))
             data.append(auxrow)
-    df = pd.DataFrame(data, columns=['ID', 'Price_cny','Name_nm','Timestamp_tm','Price_gbp','Label','Price_rur','Price_btc','Price_usd','Volume_24h','Price_eur'])
+    df = pd.DataFrame(data, columns=['extract_date','ID', 'Price_cny','Name_nm','Timestamp_tm','Price_gbp','Label','Price_rur','Price_btc','Price_usd','Volume_24h','Price_eur'])
     return df
+
+def storeinBucket(daystored,dataframestored):
+    (ret, current_path, err) = run_cmd(['pwd'])
+    current_path = current_path.replace('\n','/')
+    namefile = 'crypto_data_'+daystored+'.csv'
+    with open(current_path+'output/'+namefile, 'wb') as writeFile:
+        writer = csv.writer(writeFile)
+        writer.writerows(dataframestored)
+    _logger.info('Exporting into bucket')
+    (ret, out, err) = run_cmd(['gsutil','cp',current_path+'output/'+namefile,'gs://crypto-alaiza-project/data/crypto-WorldCoinIndex/'])
+    if(ret==1):
+        _logger.error('Exporting into bucket FAILED, maintaining the file: '+current_path + 'output/' + namefile)
+    else:
+        _logger.info('cleaning file: '+current_path + 'output/' + namefile)
+        (ret, out, err) = run_cmd(['rm', current_path + 'output/' + namefile])
+
+def run_cmd(args_list):
+    proc = subprocess.Popen(args_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    s_output, s_err = proc.communicate()
+    s_return =  proc.returncode
+    return s_return, s_output, s_err
+
+

@@ -1,7 +1,5 @@
 import logging
-import pandas as pd
-import mysql
-import pymysql
+
 
 from sqlalchemy import create_engine
 
@@ -19,13 +17,15 @@ class DBService:
         self.__table = tablename
         try:
             self.__conn = create_engine('mysql+pymysql://' + user + ':' + passw + '@' + host + ':' + str(port) + '/' + schema, echo=False)
-
         except:
             raise Exception('Unable to connect to MySQL connector')
+
+
 
     def createTable(self):
         self.__conn.execute("""
             create table if not exists {0}.{1} (
+                extract_date integer, 
                 ID varchar(20),
                 Price_cny float,
                 Name_nm varchar(20),
@@ -40,6 +40,14 @@ class DBService:
                 )""".format(self.__sche,self.__table)
                 )
         _logger.info('create table executed')
+
+    def GetDataframeDay(self,daystored):
+        query = """select * from {0}.{1} where extract_date = {2}""".format(self.__sche,self.__table,daystored)
+        response = self.__conn.execute(query)
+        dataframe = response.fetchall()
+        return dataframe
+
+
 
     def storeDataFrame(self,dataframecleandata):
         dataframecleandata.to_sql(name=self.__table, con=self.__conn, if_exists = 'append', index=False)

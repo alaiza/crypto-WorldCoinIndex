@@ -32,7 +32,7 @@ handlers:
 loggers:
     pyhive:
         level: INFO
-        handlers: [console]
+        handlers: [info_file_handler]
         propagate: no
 
 root:
