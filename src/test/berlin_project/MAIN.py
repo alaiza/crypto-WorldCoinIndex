@@ -8,7 +8,7 @@ import time
 from datetime import date
 
 
-def main_test_belin(arguments, logger):
+def main_crypto(arguments, logger):
     try:
 
         ##########CONFIG
@@ -31,12 +31,13 @@ def main_test_belin(arguments, logger):
         apiservice = APIService(freetoken)
         dbservice = DBService(mysql_host,mysql_port,mysql_user,mysql_passw,mysql_db,mysql_tablename)
         dbservice.createTable()
+        dbservice.createMetaTable()
 
 
         while(time.time()<timeend):
 
 
-            if( date.today().strftime("%Y%m%d") == '20191101'):
+            if( date.today().strftime("%Y%m%d") == daystored):
                 #doextract
                 start = timer()
                 logger.info('Data will be generated')
@@ -53,6 +54,8 @@ def main_test_belin(arguments, logger):
                     time.sleep(reptime*60- diff)
             else:
                 dataframestored = dbservice.GetDataframeDay(daystored)
+                manager.storeinBucket(daystored, dataframestored)
+                dbservice.storeExecution(daystored,len(limitcoins),len(dataframestored))
                 daystored = date.today().strftime("%Y%m%d")
 
         
@@ -77,3 +80,4 @@ def load_config(config_file):
             return yaml.safe_load(stream)
         except yaml.YAMLError as exc:
             print(exc)
+

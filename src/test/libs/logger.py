@@ -4,6 +4,28 @@ import os
 
 import yaml
 
+import time
+
+import logging
+from logging.handlers import TimedRotatingFileHandler
+
+# format the log entries
+
+
+def specific_logger():
+    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+
+    handler = TimedRotatingFileHandler('logs/crypto_logfile.log',
+                                       when='midnight',
+                                       backupCount=10)
+    handler.setFormatter(formatter)
+    logger = logging.getLogger(__name__)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    return logger
+
+
+
 
 def factory_logger(logger_name, config_file_path=None):
     if config_file_path and os.path.exists(config_file_path):

@@ -41,6 +41,19 @@ class DBService:
                 )
         _logger.info('create table executed')
 
+
+
+
+    def createMetaTable(self):
+        self.__conn.execute("""
+            create table if not exists crypto.ExecutionMetaTable (
+                exec_date date, 
+                num_cryptos integer,
+                num_lines_extracted integer
+                )"""
+                )
+        _logger.info('create table executed')
+
     def GetDataframeDay(self,daystored):
         query = """select * from {0}.{1} where extract_date = {2}""".format(self.__sche,self.__table,daystored)
         response = self.__conn.execute(query)
@@ -52,6 +65,18 @@ class DBService:
     def storeDataFrame(self,dataframecleandata):
         dataframecleandata.to_sql(name=self.__table, con=self.__conn, if_exists = 'append', index=False)
         _logger.info('data stored')
+
+
+
+    def storeExecution(self,daystored,len_limitcoins,len_dataframestored):
+        sql = """insert into crypto.ExecutionMetaTable values (
+        {0},
+        {1},
+        {2}
+        )""".format(daystored,len_limitcoins,len_dataframestored)
+        self.__conn.execute(sql)
+
+
 
 
 
