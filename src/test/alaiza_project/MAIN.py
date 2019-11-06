@@ -1,9 +1,9 @@
-from datetime import datetime
 from timeit import default_timer as timer
-from src.test.berlin_project.API_service import APIService
-from src.test.berlin_project.database_service import DBService
+from src.test.alaiza_project.API_service import APIService
+from src.test.alaiza_project.database_service import DBService
+from src.test.alaiza_project.email_service import EMailService
 import yaml
-import src.test.berlin_project.manager as manager
+import src.test.alaiza_project.manager as manager
 import time
 from datetime import date
 
@@ -19,10 +19,11 @@ def main_crypto(arguments, logger):
         mysql_user = config.get('DATABASE_user')
         mysql_passw = config.get('DATABASE_pass')
         mysql_tablename = config.get('DATABASE_table')
+        email_api_key = config.get('EMAIL_api_key')
+        email_secret_key = config.get('EMAIL_secret_key')
+        email_version = config.get('EMAIL_version')
 
-        limitcoins = config.get('example_coins').split(',')
         daystored = date.today().strftime("%Y%m%d")
-
 
         freetoken = config.get('API_token')
         reptime = arguments.get('reptime')
@@ -32,7 +33,9 @@ def main_crypto(arguments, logger):
         dbservice = DBService(mysql_host,mysql_port,mysql_user,mysql_passw,mysql_db,mysql_tablename)
         dbservice.createTable()
         dbservice.createMetaTable()
-
+        limitcoins = dbservice.getAvailableCurrencies()
+        manager.storelogsBucket()
+        emailservice = EMailService(email_api_key,email_secret_key,email_version)
 
         while(time.time()<timeend):
 
@@ -46,7 +49,7 @@ def main_crypto(arguments, logger):
                 dataframecleandata =  manager.getCleanDataframe(limitcoins,dictdata,daystored)
                 logger.info('Data will be stored')
                 dbservice.storeDataFrame(dataframecleandata)
-                logger.info('Data stored')
+                logger.info('Data stored: '+str(len(dataframecleandata)))
                 end = timer()
                 diff = end - start
                 if(diff < reptime*60):
@@ -55,11 +58,12 @@ def main_crypto(arguments, logger):
             else:
                 dataframestored = dbservice.GetDataframeDay(daystored)
                 manager.storeinBucket(daystored, dataframestored)
+                manager.storelogsBucket()
+                logger.info('Data stored into bucket')
                 dbservice.storeExecution(daystored,len(limitcoins),len(dataframestored))
+                emailservice.Genemail(daystored, str(len(limitcoins)), str(len(dataframestored)))
                 daystored = date.today().strftime("%Y%m%d")
-
-        
-
+                limitcoins = dbservice.getAvailableCurrencies()
         end = timer()
         logger.info("Total time elapsed: %s seconds", (end - start))
 

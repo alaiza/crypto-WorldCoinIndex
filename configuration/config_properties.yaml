@@ -5,7 +5,9 @@ DATABASE_user : 'alaiza_projects'
 DATABASE_pass : 'alaiza_projects2'
 DATABASE_table : 'cryptocurrency_lake'
 
-example_coins : 'GAT,GAL'
+EMAIL_api_key : '0be99a2ae46677b36f8c946b895e6a40'
+EMAIL_secret_key : 'f03498c3d66cb640bc86f19b60eb6ebb'
+EMAIL_version : 'v3.1'
 
 API_token : 'MKvR8WPypXZ1NOcLnDJjsHfhEHaJGN'
 

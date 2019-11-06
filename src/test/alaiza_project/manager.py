@@ -42,6 +42,21 @@ def storeinBucket(daystored,dataframestored):
         _logger.info('cleaning file: '+current_path + 'output/' + namefile)
         (ret, out, err) = run_cmd(['rm', current_path + 'output/' + namefile])
 
+def storelogsBucket():
+    (ret, current_path, err) = run_cmd(['pwd'])
+    current_path = current_path.replace('\n', '/')
+    (ret, files, err) = run_cmd(['ls', current_path + '/logs/'])
+    Lfiles = files.split('\n')
+    Lauxfiles = []
+    for a in Lfiles:
+        if ('crypto_logfile.log.' in a):
+            Lauxfiles.append(a)
+    for a in Lauxfiles:
+        (ret, out, err) = run_cmd(['gsutil', 'cp', current_path + '/logs/'+a,'gs://crypto-alaiza-project/logs/crypto-WorldCoinIndex/'])
+        (ret, out, err) = run_cmd(['rm', current_path + '/logs/' + a])
+    print('done')
+
+
 def run_cmd(args_list):
     proc = subprocess.Popen(args_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     s_output, s_err = proc.communicate()

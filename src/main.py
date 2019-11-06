@@ -1,7 +1,7 @@
 import sys
 import argparse
 import os
-from test.berlin_project.MAIN import main_crypto
+from test.alaiza_project.MAIN import main_crypto
 #from test.libs.logger import factory_logger
 from test.libs.logger import specific_logger
 

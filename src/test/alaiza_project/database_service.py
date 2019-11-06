@@ -42,6 +42,14 @@ class DBService:
         _logger.info('create table executed')
 
 
+    def getAvailableCurrencies(self):
+        L=[]
+        sql = """select ID from crypto.metadata_currencies where activate = 'Y'"""
+        respons = self.__conn.execute(sql)
+        dataframe = respons.fetchall()
+        for a in dataframe:
+            L.append(a[0])
+        return L
 
 
     def createMetaTable(self):
