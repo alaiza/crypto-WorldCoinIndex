@@ -54,7 +54,7 @@ class DBService:
 
     def createMetaTable(self):
         self.__conn.execute("""
-            CREATE TABLE `metadata_currencies` (
+            CREATE TABLE if not exists `metadata_currencies` (
                 `ID` varchar(20) DEFAULT NULL,
                 `Name` varchar(20) DEFAULT NULL,
                 `Activate` varchar(20) DEFAULT NULL,
@@ -71,15 +71,12 @@ class DBService:
         return dataframe
 
     def GetLastDayPrices(self):
-        query = """select ID,last_eur_prize from {0}.metadata_currencies"""
+        query = """select ID,last_eur_prize from {0}.metadata_currencies""".format(self.__sche)
         response = self.__conn.execute(query)
         dataframe = response.fetchall()
         return dataframe
 
-    def GetQUeriesForMetadata(self,fulldict,lastpricesfataframe):
-        Lqueries = []
 
-        return Lqueries
 
 
     def storeDataFrame(self,dataframecleandata):

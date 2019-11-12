@@ -33,7 +33,14 @@ def main_crypto(arguments, logger):
         dbservice = DBService(mysql_host,mysql_port,mysql_user,mysql_passw,mysql_db,mysql_tablename)
         dbservice.createTable()
         dbservice.createMetaTable()
+
+
         f = dbservice.GetLastDayPrices()
+
+        dictdata = apiservice.get_all_data()
+        manager.GetQueriesForMetadata(dictdata, f)
+
+
         limitcoins = dbservice.getAvailableCurrencies()
         manager.storelogsBucket()
         emailservice = EMailService(email_api_key,email_secret_key,email_version)

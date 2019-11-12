@@ -57,6 +57,26 @@ def storelogsBucket():
     print('done')
 
 
+def GetQueriesForMetadata(fulldict, lastpricesfataframe):
+    fulldictkeys = fulldict.keys()
+    dictaux = {}
+    for a in lastpricesfataframe:
+        dictaux[a[0]] = a[1:]
+
+    newcurrencies = []
+    newupdates = []
+    for a in fulldictkeys:
+        if (str(a) not in dictaux.keys()):
+            newcurrencies.append(a)
+        else:
+            price = fulldict.get(a).get('Price_eur')
+            if (price!=dictaux.get(a)):
+                newupdates.append([a,price])
+
+    Lqueries = []
+
+    return Lqueries
+
 def run_cmd(args_list):
     proc = subprocess.Popen(args_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     s_output, s_err = proc.communicate()
