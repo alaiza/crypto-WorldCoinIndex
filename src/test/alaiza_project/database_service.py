@@ -54,10 +54,12 @@ class DBService:
 
     def createMetaTable(self):
         self.__conn.execute("""
-            create table if not exists crypto.ExecutionMetaTable (
-                exec_date date, 
-                num_cryptos integer,
-                num_lines_extracted integer
+            CREATE TABLE `metadata_currencies` (
+                `ID` varchar(20) DEFAULT NULL,
+                `Name` varchar(20) DEFAULT NULL,
+                `Activate` varchar(20) DEFAULT NULL,
+                `alive` varchar(20) DEFAULT NULL,
+                `last_eur_prize` float 
                 )"""
                 )
         _logger.info('create table executed')
@@ -68,6 +70,16 @@ class DBService:
         dataframe = response.fetchall()
         return dataframe
 
+    def GetLastDayPrices(self):
+        query = """select ID,last_eur_prize from {0}.metadata_currencies"""
+        response = self.__conn.execute(query)
+        dataframe = response.fetchall()
+        return dataframe
+
+    def GetQUeriesForMetadata(self,fulldict,lastpricesfataframe):
+        Lqueries = []
+
+        return Lqueries
 
 
     def storeDataFrame(self,dataframecleandata):

@@ -33,6 +33,7 @@ def main_crypto(arguments, logger):
         dbservice = DBService(mysql_host,mysql_port,mysql_user,mysql_passw,mysql_db,mysql_tablename)
         dbservice.createTable()
         dbservice.createMetaTable()
+        f = dbservice.GetLastDayPrices()
         limitcoins = dbservice.getAvailableCurrencies()
         manager.storelogsBucket()
         emailservice = EMailService(email_api_key,email_secret_key,email_version)
@@ -57,6 +58,8 @@ def main_crypto(arguments, logger):
                     time.sleep(reptime*60- diff)
             else:
                 dataframestored = dbservice.GetDataframeDay(daystored)
+                dataframeprizeslastday = dbservice.GetLastDayPrices()
+                queriesForMetadata = manager.GetQUeriesForMetadata()
                 manager.storeinBucket(daystored, dataframestored)
                 manager.storelogsBucket()
                 logger.info('Data stored into bucket')
