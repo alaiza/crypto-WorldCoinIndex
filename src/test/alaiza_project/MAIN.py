@@ -34,27 +34,18 @@ def main_crypto(arguments, logger):
         dbservice.createTable()
         dbservice.createMetaTable()
 
-
-        f = dbservice.GetLastDayPrices()
-
-        dictdata = apiservice.get_all_data()
-        manager.GetQueriesForMetadata(dictdata, f)
-
-
         limitcoins = dbservice.getAvailableCurrencies()
         manager.storelogsBucket()
         emailservice = EMailService(email_api_key,email_secret_key,email_version)
 
         while(time.time()<timeend):
-
-
             if( date.today().strftime("%Y%m%d") == daystored):
                 #doextract
                 start = timer()
                 logger.info('Data will be generated')
                 apiservice.update_data()
                 dictdata = apiservice.get_all_data()
-                dataframecleandata =  manager.getCleanDataframe(limitcoins,dictdata,daystored)
+                dataframecleandata = manager.getCleanDataframe(limitcoins,dictdata,daystored)
                 logger.info('Data will be stored')
                 dbservice.storeDataFrame(dataframecleandata)
                 logger.info('Data stored: '+str(len(dataframecleandata)))
@@ -62,11 +53,10 @@ def main_crypto(arguments, logger):
                 diff = end - start
                 if(diff < reptime*60):
                     logger.info('Sleeping: '+str(reptime*60-diff)+' seconds')
-                    time.sleep(reptime*60- diff)
+                    time.sleep(reptime*60 - diff)
             else:
                 dataframestored = dbservice.GetDataframeDay(daystored)
-                dataframeprizeslastday = dbservice.GetLastDayPrices()
-                queriesForMetadata = manager.GetQUeriesForMetadata()
+                RefreshMetadaTable(dbservice, apiservice)
                 manager.storeinBucket(daystored, dataframestored)
                 manager.storelogsBucket()
                 logger.info('Data stored into bucket')
@@ -85,6 +75,12 @@ def main_crypto(arguments, logger):
         logger.info("The program finished.")
 
 
+
+def RefreshMetadaTable(dbservice,apiservice):
+    dataframeprizeslastday = dbservice.GetLastDayPricesCounter()
+    dictdata = apiservice.get_all_data()
+    Lqueries = manager.GetQueriesForMetadata(dictdata, dataframeprizeslastday)
+    dbservice.updateMetadata(Lqueries)
 
 
 

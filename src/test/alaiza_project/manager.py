@@ -2,6 +2,7 @@ import logging
 import pandas as pd
 import subprocess
 import csv
+import time
 
 
 _logger = logging.getLogger(__name__)
@@ -57,25 +58,45 @@ def storelogsBucket():
     print('done')
 
 
-def GetQueriesForMetadata(fulldict, lastpricesfataframe):
+def GetQueriesForMetadata(fulldict, lastpricescounterdataframe):
     fulldictkeys = fulldict.keys()
     dictaux = {}
-    for a in lastpricesfataframe:
+    for a in lastpricescounterdataframe:
         dictaux[a[0]] = a[1:]
 
     newcurrencies = []
     newupdates = []
+    addcounter = []
+    killcurrencies = []
     for a in fulldictkeys:
         if (str(a) not in dictaux.keys()):
-            newcurrencies.append(a)
+            newcurrencies.append([a,fulldict.get(a).get('Name'),fulldict.get(a).get('Price_eur'),fulldict.get(a).get('Volume_24h')])
         else:
             price = fulldict.get(a).get('Price_eur')
-            if (price!=dictaux.get(a)):
-                newupdates.append([a,price])
-
-    Lqueries = []
-
+            priceold = dictaux.get(a)[0]
+            if (price!=priceold):
+                newupdates.append([a,fulldict.get(a).get('Name'),price,fulldict.get(a).get('Volume_24h'),round(((price * 100)/priceold)-100, 8)])
+            else:
+                if(dictaux.get(a)[1] >=3 and dictaux.get(a)[2] == 'Y'):
+                    killcurrencies.append(a)
+                elif(dictaux.get(a)[1] < 3 and dictaux.get(a)[2] == 'Y'):
+                    addcounter.append([a,int(dictaux.get(a)[1])+1])
+    Lqueries = GetQueriesFromLists(newcurrencies,newupdates,addcounter,killcurrencies)
     return Lqueries
+
+
+def GetQueriesFromLists(newcurrencies,newupdates,addcounter,killcurrencies):
+    L = []
+    epoch_time = str(int(time.time()))
+    for a in newcurrencies:
+        L.append("""insert into crypto.metadata_currencies values ('{0}','{1}','Y','Y',{2},{3},0,0,{4},0)""".format(a[0],a[1],a[2],a[3],epoch_time))
+    for a in newupdates:
+        L.append("""update crypto.metadata_currencies set last_eur_prize = {1} ,alive = 'Y', Volume_24 = {2}, counter_dead = 0,percent_diff_value = {3}  where ID = '{0}'""".format(a[0],a[2],a[3],a[4]))
+    for a in killcurrencies:
+        L.append("""update crypto.metadata_currencies set alive = 'N',counter_dead = 0,epoch_dead = {1} ,percent_diff_value=0 where ID = '{0}'""".format(a,epoch_time))
+    for a in addcounter:
+        L.append("""update crypto.metadata_currencies set counter_dead = {1}  where ID = '{0}'""".format(a[0],a[1]))
+    return L
 
 def run_cmd(args_list):
     proc = subprocess.Popen(args_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

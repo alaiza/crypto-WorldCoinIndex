@@ -44,7 +44,7 @@ class DBService:
 
     def getAvailableCurrencies(self):
         L=[]
-        sql = """select ID from crypto.metadata_currencies where activate = 'Y'"""
+        sql = """select ID from crypto.metadata_currencies where activate = 'Y' and alive = 'Y'"""
         respons = self.__conn.execute(sql)
         dataframe = respons.fetchall()
         for a in dataframe:
@@ -70,8 +70,8 @@ class DBService:
         dataframe = response.fetchall()
         return dataframe
 
-    def GetLastDayPrices(self):
-        query = """select ID,last_eur_prize from {0}.metadata_currencies""".format(self.__sche)
+    def GetLastDayPricesCounter(self):
+        query = """select ID,last_eur_prize,counter_dead,alive from {0}.metadata_currencies""".format(self.__sche)
         response = self.__conn.execute(query)
         dataframe = response.fetchall()
         return dataframe
@@ -83,7 +83,12 @@ class DBService:
         dataframecleandata.to_sql(name=self.__table, con=self.__conn, if_exists = 'append', index=False)
         _logger.info('data stored')
 
-
+    def updateMetadata(self,Lqueries):
+        counter = 0
+        for a in Lqueries:
+            counter = counter+1
+            print(counter)
+            self.__conn.execute(a)
 
     def storeExecution(self,daystored,len_limitcoins,len_dataframestored):
         sql = """insert into crypto.ExecutionMetaTable values (
