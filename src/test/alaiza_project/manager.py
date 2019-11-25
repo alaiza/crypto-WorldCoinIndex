@@ -89,6 +89,15 @@ def GetQueriesFromLists(newcurrencies,newupdates,addcounter,killcurrencies):
     L = []
     epoch_time = str(int(time.time()))
     for a in newcurrencies:
+        L.append("""
+        Create table if not exists cryptowarehouse.currency_{0} (
+        timestamp integer,
+        ID varchar(20),
+        price_eur float,
+        slope float,
+        diff float
+        )
+        """.format(a[0]))
         L.append("""insert into crypto.metadata_currencies values ('{0}','{1}','Y','Y',{2},{3},0,0,{4},0)""".format(a[0],a[1],a[2],a[3],epoch_time))
     for a in newupdates:
         L.append("""update crypto.metadata_currencies set last_eur_prize = {1} ,alive = 'Y', Volume_24 = {2}, counter_dead = 0,percent_diff_value = {3}  where ID = '{0}'""".format(a[0],a[2],a[3],a[4]))
