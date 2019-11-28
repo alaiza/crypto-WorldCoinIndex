@@ -91,18 +91,17 @@ def GetQueriesFromLists(newcurrencies,newupdates,addcounter,killcurrencies):
     for a in newcurrencies:
         L.append("""
         Create table if not exists cryptowarehouse.currency_{0} (
-        timestamp integer,
-        ID varchar(20),
+        id integer NOT NULL AUTO_INCREMENT,
+        time_stamp integer,
         price_eur float,
-        slope float,
-        diff float
-        )
-        """.format(a[0]))
+        Volume_24h float
+        )""".format(a[0]))
         L.append("""insert into crypto.metadata_currencies values ('{0}','{1}','Y','Y',{2},{3},0,0,{4},0)""".format(a[0],a[1],a[2],a[3],epoch_time))
     for a in newupdates:
         L.append("""update crypto.metadata_currencies set last_eur_prize = {1} ,alive = 'Y', Volume_24 = {2}, counter_dead = 0,percent_diff_value = {3}  where ID = '{0}'""".format(a[0],a[2],a[3],a[4]))
     for a in killcurrencies:
         L.append("""update crypto.metadata_currencies set alive = 'N',counter_dead = 0,epoch_dead = {1} ,percent_diff_value=0 where ID = '{0}'""".format(a,epoch_time))
+        L.append("""drop table if exists cryptowarehouse.currency_{0}""".format(a))
     for a in addcounter:
         L.append("""update crypto.metadata_currencies set counter_dead = {1}  where ID = '{0}'""".format(a[0],a[1]))
     return L

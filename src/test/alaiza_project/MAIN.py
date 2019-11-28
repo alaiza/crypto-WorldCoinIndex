@@ -37,6 +37,7 @@ def main_crypto(arguments, logger):
         RefreshMetadaTable(dbservice,apiservice)
 
 
+
         limitcoins = dbservice.getAvailableCurrencies()
         manager.storelogsBucket()
         emailservice = EMailService(email_api_key,email_secret_key,email_version)

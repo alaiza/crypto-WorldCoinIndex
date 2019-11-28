@@ -44,7 +44,7 @@ class DBService:
 
     def getAvailableCurrencies(self):
         L=[]
-        sql = """select ID from crypto.metadata_currencies where activate = 'Y' and alive = 'Y'"""
+        sql = """select ID from crypto.metadata_currencies where activate = 'Y' or alive = 'Y'"""
         respons = self.__conn.execute(sql)
         dataframe = respons.fetchall()
         for a in dataframe:
@@ -80,7 +80,14 @@ class DBService:
 
 
     def storeDataFrame(self,dataframecleandata):
-        dataframecleandata.to_sql(name=self.__table, con=self.__conn, if_exists = 'append', index=False)
+        print('a')
+        Lqueries = []
+        for index, row in dataframecleandata.iterrows():
+            sql = """insert into cryptowarehouse.currency_{0} values ({1},{2},{3})""".format(row['ID'],row['Timestamp_tm'],row['Price_eur'],row['Volume_24h'])
+            Lqueries.append(sql)
+        print('a')
+        self.updateMetadata(Lqueries)
+        #dataframecleandata.to_sql(name=self.__table, con=self.__conn, if_exists = 'append', index=False)
         _logger.info('data stored')
 
     def updateMetadata(self,Lqueries):
@@ -96,6 +103,7 @@ class DBService:
         {1},
         {2}
         )""".format(daystored,len_limitcoins,len_dataframestored)
+        print sql
         self.__conn.execute(sql)
 
 
